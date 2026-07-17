@@ -1,13 +1,13 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
-DB_URL="postgresql://rishab@localhost/ai_document"
+DB_URL="postgresql://rishabsharma@localhost/ai_document"
 
 engine =create_engine(DB_URL)
 
 SessionLocal = sessionmaker(
     autocommit = False,
-    autoFlush = False,
+    autoflush = False,
     bind= engine
 )
 

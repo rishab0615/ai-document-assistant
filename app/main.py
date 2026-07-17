@@ -4,6 +4,8 @@ from app.database import engine, Base
 from app import models            # This is imported but not used becuase
                                   # it executes and lets Base know these models exits
 
+from app.routers import documents
+
 
 # FASTAPI APP
 app=FastAPI()
@@ -14,9 +16,7 @@ Base.metadata.create_all(bind=engine)
 
 
 # Routes
-@app.get("/")
-def home():
-    return {"message":"Hello"}
+app.include_router(documents.router)
 
 
 
