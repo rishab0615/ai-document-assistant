@@ -9,5 +9,9 @@ class DocumentCreate(BaseModel):
     file_size: int
 
 class DocumentResponse(BaseModel):
+    id:int
     title: str
-    id: int
+    original_filename:str
+    stored_filename:str
+    content_type:str
+    file_size:int

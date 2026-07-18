@@ -40,3 +40,19 @@ def upload_document(
     return db_doc
 
 
+@router.get("/",response_model=list[schemas.DocumentResponse])
+def get_documents(
+    db:Session = Depends(get_db)
+):
+   return crud.get_documents(db)
+
+@router.get("/{doc_id}",response_model=schemas.DocumentResponse)
+def get_document(
+    doc_id:int,
+    db:session = Depends(get_db)
+    
+):
+ return crud.get_document(db,doc_id)
+
+
+

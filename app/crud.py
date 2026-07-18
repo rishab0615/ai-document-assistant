@@ -17,3 +17,17 @@ def create_doc(
     db.commit()                                                # Save changes to database
     db.refresh(db_doc)                                         # Reload object from database (db.query(Model)  # Read data)
     return db_doc 
+
+
+def get_documents(
+    db:Session,
+):
+    return db.query(models.Document).all()
+
+
+
+
+def get_document(db:Session, document_id:int):
+    
+    return db.query(models.Document).filter(models.Document.id == document_id).first()
+
