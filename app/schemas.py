@@ -3,6 +3,7 @@ from pydantic import BaseModel
 
 class DocumentCreate(BaseModel):
     title: str
+    
     original_filename: str
     stored_filename: str
     content_type: str
