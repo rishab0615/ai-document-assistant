@@ -1,5 +1,11 @@
 from sqlalchemy.orm import Session
-from app import models, schemas
+from app import models, schemas, utils
+from fastapi import HTTPException
+import os
+
+
+
+## DOCUMENTS ##
 
 def create_doc(
     db:Session, 
@@ -28,6 +34,49 @@ def get_documents(
 
 
 def get_document(db:Session, document_id:int):
-    
     return db.query(models.Document).filter(models.Document.id == document_id).first()
 
+
+
+def delete_document(db:Session,document_id:int):
+    document =   db.query(models.Document).filter(models.Document.id == document_id).first()     # fetch document metadata
+    if not document:                                                              # If document metadata doesnt exists make raise 404 exception
+        raise HTTPException(   
+        status_code=404,           
+        detail="Document not found"
+    )
+    upload_path = os.path.join("uploads", document.stored_filename)              # Fetch the path
+    if os.path.exists(upload_path):                                              # Check document file in path exists
+        os.remove(upload_path)                                                   # Remove file
+
+    db.delete(document)                                        # Delete document metadata from database
+    db.commit()                                                # Commit changes
+
+    return {"message": "Document deleted successfully"}         # Return message 
+
+
+
+
+
+
+
+
+## USERS ##
+
+def create_user(db:Session, user: schemas.UserCreate):
+    if db.query(models.User).filter(models.User.email==user.email).first():
+        raise HTTPException(
+            status_code= 409,
+            detail="Email already registered"
+        )
+    hashed_password = utils.hash_password(user.password)
+    user = models.User(
+       username= user.username,
+        email=user.email,
+        hashed_password=hashed_password
+     )
+    
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user

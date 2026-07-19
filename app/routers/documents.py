@@ -49,10 +49,23 @@ def get_documents(
 @router.get("/{doc_id}",response_model=schemas.DocumentResponse)
 def get_document(
     doc_id:int,
-    db:session = Depends(get_db)
+    db:Session = Depends(get_db)
     
 ):
  return crud.get_document(db,doc_id)
+
+
+
+@router.delete("/{doc_id}")
+def delete(
+    doc_id:int,
+    db:Session = Depends(get_db)
+):
+    return crud.delete_document(db,doc_id)
+
+
+
+
 
 
 
