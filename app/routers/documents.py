@@ -4,6 +4,8 @@ from app import crud, schemas, models, oauth2
 from app.dependencies import get_db
 import os
 import uuid
+from app.services.pdf_service import extract_text_from_pdf
+
 
 router = APIRouter(
     prefix="/documents",
@@ -25,6 +27,7 @@ def upload_document(
 
     with open(upload_path, "wb") as buffer:
         buffer.write(file.file.read())
+    extracted_text = extract_text_from_pdf(upload_path)
 
     db_doc = crud.create_doc(
         db=db,
@@ -35,7 +38,8 @@ def upload_document(
             content_type=file.content_type,
             file_size=file.size
         ),
-        user_id=current_user.id
+        user_id=current_user.id,
+        extracted_text=extracted_text
     )
 
     return db_doc

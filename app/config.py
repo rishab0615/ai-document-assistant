@@ -1,5 +1,12 @@
-SECRET_KEY = "replace-this-with-a-long-random-string"
+import os
+from dotenv import load_dotenv
 
-ALGORITHM = "HS256"
+load_dotenv()
 
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+DB_URL = os.getenv("DB_URL")
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = os.getenv("ALGORITHM")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(
+    os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60")
+)
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")

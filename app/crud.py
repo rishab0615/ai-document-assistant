@@ -14,7 +14,8 @@ import os
 def create_doc(
     db: Session,
     document: schemas.DocumentCreate,
-    user_id: int
+    user_id: int,
+    extracted_text: str
 ):
     """
     Create a new document and assign ownership
@@ -23,6 +24,7 @@ def create_doc(
 
     db_doc = models.Document(
         user_id=user_id,
+        extracted_text=extracted_text,
         title=document.title,
         original_filename=document.original_filename,
         stored_filename=document.stored_filename,
