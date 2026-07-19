@@ -1,7 +1,9 @@
 from sqlalchemy.orm import Session
 from app import models, schemas, utils
+from sqlalchemy import or_
 from fastapi import HTTPException
 import os
+
 
 
 
@@ -80,3 +82,18 @@ def create_user(db:Session, user: schemas.UserCreate):
     db.commit()
     db.refresh(user)
     return user
+
+def get_user_by_identifier(
+    db: Session,
+    identifier: str
+):
+    return (
+    db.query(models.User)
+    .filter(
+        or_(
+            models.User.email == identifier,
+            models.User.username == identifier
+        )
+    )
+    .first()
+)
