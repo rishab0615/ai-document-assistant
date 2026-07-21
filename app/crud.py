@@ -25,7 +25,6 @@ def create_doc(
     db_doc = models.Document(
         user_id=user_id,
         extracted_text=extracted_text,
-        title=document.title,
         original_filename=document.original_filename,
         stored_filename=document.stored_filename,
         content_type=document.content_type,

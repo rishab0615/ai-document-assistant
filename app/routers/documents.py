@@ -15,7 +15,6 @@ router = APIRouter(
 
 @router.post("/")
 def upload_document(
-    title: str,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
     current_user: models.User = Depends(oauth2.get_current_user)
@@ -44,7 +43,6 @@ def upload_document(
     db_doc = crud.create_doc(
         db=db,
         document=schemas.DocumentCreate(
-            title=title,
             original_filename=file.filename,
             stored_filename=stored_filename,
             content_type=file.content_type,

@@ -10,7 +10,6 @@ class Document(Base):
     id = Column(Integer, primary_key=True, index=True)
     extracted_text = Column(Text)                   # - Text is designed for larger text 5 or 500000
     user_id = Column(Integer, ForeignKey("users.id"))
-    title= Column(String,nullable=False)
     original_filename = Column(String,nullable =False)
     stored_filename = Column(String, nullable=False)
     content_type = Column(String, nullable=False)
