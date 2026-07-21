@@ -5,47 +5,68 @@ from google.genai.errors import ServerError
 
 from app.config import GEMINI_API_KEY
 
-client = genai.Client(
-    api_key=GEMINI_API_KEY
-)
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 MODELS = [
     "gemini-3.5-flash",
     "gemini-3.1-flash-lite",
-    "gemini-2.5-flash-lite"
+    "gemini-2.5-flash-lite",
 ]
+
+
+def build_chat_history(messages):
+    if not messages:
+        return "No previous conversation."
+
+    history = []
+
+    for message in messages:
+        if message.role == "user":
+            history.append(f"User: {message.message}")
+        else:
+            history.append(f"Assistant: {message.message}")
+
+    return "\n\n".join(history)
 
 
 def ask_gemini(
     document_text: str,
-    question: str
+    chat_history: str,
+    question: str,
 ):
     prompt = f"""
-    You are an expert document assistant.
+You are an expert document assistant.
+
+Previous Conversation:
+{chat_history}
+
+--------------------------------------------------------
 
 Document:
 {document_text}
 
-Question:
+--------------------------------------------------------
+
+Current Question:
 {question}
 
 Rules:
 
 1. Use the document as your primary source.
 
-2. If the question asks for information contained in the document,
-answer only from the document.
+2. Use the previous conversation only to understand context.
 
-3. If the question asks for analysis, suggestions,
-critique or improvements,
-use your professional knowledge while referring
-to the document.
+3. Never contradict the document.
 
-4. Never invent facts that are not present.
+4. If the answer exists in the document,
+answer from the document.
 
-5. Clearly distinguish between
-facts from the document
-and your recommendations.
+5. If the user asks for analysis,
+you may provide professional recommendations,
+but clearly distinguish them from document facts.
+
+6. Never invent information not supported
+by the document.
 """
 
     last_error = None
@@ -56,7 +77,7 @@ and your recommendations.
 
             response = client.models.generate_content(
                 model=model,
-                contents=prompt
+                contents=prompt,
             )
 
             return response.text
@@ -67,5 +88,5 @@ and your recommendations.
             time.sleep(2)
 
     raise Exception(
-        "All Gemini models are temporarily unavailable. Please try again later."
+        "All Gemini models are temporarily unavailable."
     ) from last_error

@@ -1,45 +1,63 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app import schemas, crud, models, oauth2
+from app import crud, models, oauth2, schemas
 from app.dependencies import get_db
-from app.services.gemini_service import ask_gemini
+from app.services.gemini_service import (
+    ask_gemini,
+    build_chat_history,
+)
 
 router = APIRouter(
     prefix="/ai",
-    tags=["AI"]
+    tags=["AI"],
 )
 
 
-@router.post( "/ask",response_model=schemas.AIResponse)
+@router.post("/ask", response_model=schemas.AIResponse)
 def ask_question(
     request: schemas.AIQuestion,
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(oauth2.get_current_user)
+    current_user: models.User = Depends(oauth2.get_current_user),
 ):
-    # 1. Verify document exists & belongs to user
-    document=crud.get_document(
-        db,
-        request.document_id,
-        current_user.id
+    # 1. Verify document exists and belongs to current user
+    document = crud.get_document(
+        db=db,
+        document_id=request.document_id,
+        user_id=current_user.id,
     )
 
-     # 2. Save user's question
+    # 2. Save user's question
     crud.create_chat_message(
-    db=db,
-    document_id=document.id,
-    user_id=current_user.id,
-    role="user",
-    message=request.question,
-)
+        db=db,
+        document_id=document.id,
+        user_id=current_user.id,
+        role="user",
+        message=request.question,
+    )
 
-     # 3. Ask Gemini
+    # 3. Load previous conversation
+    messages = crud.get_chat_history(
+        db=db,
+        document_id=document.id,
+        user_id=current_user.id,
+    )
+   # Remove the current question that was just saved
+    messages = messages[:-1]
+    # 4. Keep only the latest conversation
+    messages = messages[-6:]
+
+    # 5. Convert conversation into prompt text
+    chat_history = build_chat_history(messages)
+
+    # 6. Ask Gemini
     answer = ask_gemini(
-    document.extracted_text,
-    request.question
-)   
+        document_text=document.extracted_text,
+        chat_history=chat_history,
+        question=request.question,
+    )
 
-      # 4. Save AI's answer
+    # 7. Save assistant reply
     crud.create_chat_message(
         db=db,
         document_id=document.id,
@@ -47,8 +65,8 @@ def ask_question(
         role="assistant",
         message=answer,
     )
-    
 
+    # 8. Return response
     return schemas.AIResponse(
-    answer=answer
-)
+        answer=answer,
+    )
