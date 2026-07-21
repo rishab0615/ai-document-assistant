@@ -7,6 +7,7 @@ from app import models            # This is imported but not used becuase
 from app.routers import documents
 from app.routers import auth
 from app.routers import ai
+from app.routers import chat
 
 
 
@@ -22,4 +23,5 @@ Base.metadata.create_all(bind=engine)
 app.include_router(documents.router)
 app.include_router(auth.router)
 app.include_router(ai.router)
+app.include_router(chat.router)
 

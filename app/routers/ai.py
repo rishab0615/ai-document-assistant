@@ -17,15 +17,38 @@ def ask_question(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(oauth2.get_current_user)
 ):
+    # 1. Verify document exists & belongs to user
     document=crud.get_document(
         db,
         request.document_id,
         current_user.id
     )
+
+     # 2. Save user's question
+    crud.create_chat_message(
+    db=db,
+    document_id=document.id,
+    user_id=current_user.id,
+    role="user",
+    message=request.question,
+)
+
+     # 3. Ask Gemini
     answer = ask_gemini(
     document.extracted_text,
     request.question
-)
+)   
+
+      # 4. Save AI's answer
+    crud.create_chat_message(
+        db=db,
+        document_id=document.id,
+        user_id=current_user.id,
+        role="assistant",
+        message=answer,
+    )
+    
+
     return schemas.AIResponse(
     answer=answer
 )

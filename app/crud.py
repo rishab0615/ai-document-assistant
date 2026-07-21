@@ -189,3 +189,44 @@ def get_user_by_identifier(
         )
         .first()
     )
+
+
+# ==========================================================
+# CHATS
+# ==========================================================
+
+def create_chat_message(
+    db: Session,
+    document_id: int,
+    user_id: int,
+    role: str,
+    message: str,
+) -> models.ChatMessage:
+
+    chat_message = models.ChatMessage(
+        document_id=document_id,
+        user_id=user_id,
+        role=role,
+        message=message,
+    )
+
+    db.add(chat_message)
+    db.commit()
+    db.refresh(chat_message)
+
+    return chat_message
+
+def get_chat_history(
+    db: Session,
+    document_id: int,
+    user_id: int,
+):
+    return (
+        db.query(models.ChatMessage)
+        .filter(
+            models.ChatMessage.document_id == document_id,
+            models.ChatMessage.user_id == user_id,
+        )
+        .order_by(models.ChatMessage.created_at.asc())
+        .all()
+    )    
