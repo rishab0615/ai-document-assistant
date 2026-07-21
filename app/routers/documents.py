@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, UploadFile, File
+from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
 from sqlalchemy.orm import Session
 from app import crud, schemas, models, oauth2
 from app.dependencies import get_db
@@ -20,6 +20,18 @@ def upload_document(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(oauth2.get_current_user)
 ):
+    if file.content_type != "application/pdf":
+        raise HTTPException(
+        status_code=400,
+        detail="Only PDF files are allowed."
+    )
+    MAX_FILE_SIZE = 20 * 1024 * 1024  # 20 MB
+
+    if file.size > MAX_FILE_SIZE:
+        raise HTTPException(
+        status_code=400,
+        detail="File size must be less than 20 MB."
+    )
     extension = os.path.splitext(file.filename)[1]
     stored_filename = f"{uuid.uuid4()}{extension}"
 
