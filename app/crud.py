@@ -230,3 +230,43 @@ def get_chat_history(
         .order_by(models.ChatMessage.created_at.asc())
         .all()
     )    
+
+
+
+def delete_document(
+    db,
+    document_id: int,
+    user_id: int,
+):
+    document = (
+        db.query(models.Document)
+        .filter(
+            models.Document.id == document_id,
+            models.Document.user_id == user_id,
+        )
+        .first()
+    )
+
+    if document is None:
+        return None
+
+    # Delete chat history
+    db.query(models.ChatMessage).filter(
+        models.ChatMessage.document_id == document.id
+    ).delete()
+
+    # Delete PDF from disk
+    if document.stored_filename:
+        file_path = os.path.join(
+            "uploads",
+            document.stored_filename,
+        )
+
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
+    # Delete document
+    db.delete(document)
+    db.commit()
+
+    return True

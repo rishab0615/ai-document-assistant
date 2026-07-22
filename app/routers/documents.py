@@ -79,14 +79,22 @@ def get_document(
     )
 
 
-@router.delete("/{doc_id}")
+@router.delete("/{document_id}", status_code=204)
 def delete_document(
-    doc_id: int,
+    document_id: int,
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(oauth2.get_current_user)
+    current_user: models.User = Depends(oauth2.get_current_user),
 ):
-    return crud.delete_document(
-        db,
-        doc_id,
-        current_user.id
+    deleted = crud.delete_document(
+        db=db,
+        document_id=document_id,
+        user_id=current_user.id,
     )
+
+    if deleted is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Document not found.",
+        )
+
+    return
