@@ -1,7 +1,7 @@
 import time
 
 from google import genai
-from google.genai.errors import ServerError
+from google.genai.errors import ClientError, ServerError
 
 from app.config import GEMINI_API_KEY
 
@@ -80,13 +80,26 @@ by the document.
                 contents=prompt,
             )
 
+            print(f"Success using {model}")
             return response.text
 
-        except ServerError as e:
-            print(f"{model} unavailable. Trying next model...")
+        except ClientError as e:
             last_error = e
+
+            if "RESOURCE_EXHAUSTED" in str(e):
+                print(f"{model} quota exhausted. Trying next model...")
+                continue
+
+            print(f"{model} client error: {e}")
+            raise
+
+        except ServerError as e:
+            last_error = e
+
+            print(f"{model} server unavailable. Trying next model...")
             time.sleep(2)
+            continue
 
     raise Exception(
-        "All Gemini models are temporarily unavailable."
+        "The AI service is temporarily unavailable. Please try again later."
     ) from last_error
